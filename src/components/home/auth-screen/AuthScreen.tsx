@@ -4,6 +4,8 @@ import TodaysHighlight from "./TodaysHighlight";
 import RotatedText from "@/components/decorators/RotatedText";
 import MasonryGrid from "./MasonryGrid";
 import { ModeToggle } from "@/components/ModeToggle";
+import Features from "./Features";
+import Testimonials from "./Testimonials";
 
 const AuthScreen = () => {
   return (
@@ -12,7 +14,6 @@ const AuthScreen = () => {
         <ModeToggle />
 
         <HeroSection />
-        <TodaysHighlight />
 
         <div className="mb-20 mt-12">
           <div className="max-w-6xl  mx-auto px-4">
@@ -26,6 +27,7 @@ const AuthScreen = () => {
 
             {/* Featured Post */}
             <div className="flex flex-col gap-10 mt-10">
+              <TodaysHighlight />
               <div className="mt-24">
                 <p className="text-2xl md:text-5xl text-center tracking-tighter font-bold">
                   Meet the <RotatedText>Stars</RotatedText> of Our Farm
@@ -33,6 +35,8 @@ const AuthScreen = () => {
 
                 <MasonryGrid />
               </div>
+              <Features />
+              <Testimonials />
             </div>
           </div>
         </div>
