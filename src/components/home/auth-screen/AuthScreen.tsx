@@ -6,6 +6,7 @@ import MasonryGrid from "./MasonryGrid";
 import { ModeToggle } from "@/components/ModeToggle";
 import Features from "./Features";
 import Testimonials from "./Testimonials";
+import Pricing from "@/components/Pricing";
 
 const AuthScreen = () => {
   return (
@@ -37,6 +38,7 @@ const AuthScreen = () => {
               </div>
               <Features />
               <Testimonials />
+              <Pricing />
             </div>
           </div>
         </div>
