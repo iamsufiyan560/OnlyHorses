@@ -14,7 +14,7 @@ const UserProfile = () => {
   };
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col ">
       <CoverImage adminName={admin.name} />
 
       <div className="flex flex-col p-4">

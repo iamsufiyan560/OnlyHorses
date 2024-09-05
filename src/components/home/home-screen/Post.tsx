@@ -1,10 +1,18 @@
 "use client";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { buttonVariants } from "@/components/ui/button";
-import { ImageIcon, LockKeyholeIcon, Trash } from "lucide-react";
+import { cn } from "@/lib/utils";
+import {
+  Heart,
+  ImageIcon,
+  LockKeyholeIcon,
+  MessageCircle,
+  Trash,
+} from "lucide-react";
 import { CldVideoPlayer } from "next-cloudinary";
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 
 const Post = ({
   post,
@@ -15,6 +23,7 @@ const Post = ({
   isSubscribed: boolean;
   admin: any;
 }) => {
+  const [isLiked, setISliked] = useState(true);
   return (
     <div className="flex flex-col gap-3 p-3 border-t">
       <div className="flex items-center justify-between">
@@ -97,6 +106,23 @@ const Post = ({
           </div>
         </div>
       )}
+
+      <div className="flex gap-4">
+        <div className="flex gap-1 items-center">
+          <Heart
+            className={cn("w-5 h-5 cursor-pointer", {
+              "text-red-500": isLiked,
+              "fill-red-500": isLiked,
+            })}
+            onClick={() => setISliked(!isLiked)}
+          />
+          <span className="text-xs text-zinc-400 tracking-tighter">55</span>
+        </div>
+        <div className="flex gap-1 items-center">
+          <MessageCircle className="w-5 h-5 cursor-pointer" />
+          <span className="text-xs text-zinc-400 tracking-tighter">11</span>
+        </div>
+      </div>
     </div>
   );
 };
