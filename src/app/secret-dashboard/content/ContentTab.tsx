@@ -76,7 +76,9 @@ const ContentTab = () => {
             <CldUploadWidget
               signatureEndpoint={"/api/sign-image"}
               onSuccess={(result, { widget }) => {
-                // Handle the successful upload if needed
+                setMediaUrl(
+                  (result.info as CloudinaryUploadWidgetInfo).secure_url
+                );
                 widget.close();
               }}
             >
