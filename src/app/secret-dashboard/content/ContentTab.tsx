@@ -22,6 +22,7 @@ import {
 } from "next-cloudinary";
 import Image from "next/image";
 import { useState } from "react";
+import "next-cloudinary/dist/cld-video-player.css";
 
 const ContentTab = () => {
   const [text, setText] = useState("");
@@ -94,24 +95,24 @@ const ContentTab = () => {
             </CldUploadWidget>
 
             {/* Use the static media URL here */}
-            {mediaType === "image" && (
+            {mediaUrl && mediaType === "image" && (
               <div className="flex justify-center relative w-full h-96">
                 <Image
                   fill
-                  src="/onlyfans.png"
+                  src={mediaUrl}
                   alt="Default Image"
                   className="object-contain rounded-md"
                 />
               </div>
             )}
 
-            {mediaType === "video" && (
+            {mediaUrl && mediaType === "video" && (
               <div className="w-full mx-auto">
-                <video
+                <CldVideoPlayer
                   width={960}
                   height={540}
                   className="rounded-md"
-                  src="videos/highlighted-vid.mp4"
+                  src={mediaUrl}
                 />
               </div>
             )}
