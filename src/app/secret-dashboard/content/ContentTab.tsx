@@ -14,6 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
+import { useMutation } from "@tanstack/react-query";
 import { TriangleAlert } from "lucide-react";
 import {
   CldUploadWidget,
@@ -22,7 +23,8 @@ import {
 } from "next-cloudinary";
 import Image from "next/image";
 import { useState } from "react";
-import "next-cloudinary/dist/cld-video-player.css";
+import { createPostAction } from "../actions";
+import { useToast } from "@/hooks/use-toast";
 
 const ContentTab = () => {
   const [text, setText] = useState("");
@@ -30,13 +32,43 @@ const ContentTab = () => {
   const [isPublic, setIsPublic] = useState<boolean>(false);
   const [mediaUrl, setMediaUrl] = useState<string>("");
 
+  const { toast } = useToast();
+
+  const { mutate: createPost, isPending } = useMutation({
+    mutationKey: ["createPost"],
+    mutationFn: async () =>
+      createPostAction({ text, isPublic, mediaUrl, mediaType }),
+    onSuccess: () => {
+      toast({
+        title: "Post Created",
+        description: "Your post has been successfully created",
+      });
+      setText("");
+      setMediaType("video");
+      setIsPublic(false);
+      setMediaUrl("");
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   return (
     <>
       <p className="text-3xl my-5 font-bold text-center uppercase">
         <UnderlinedText className="decoration-wavy">Share</UnderlinedText> Post
       </p>
 
-      <form>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          createPost();
+        }}
+      >
         <Card className="w-full max-w-md mx-auto">
           <CardHeader>
             <CardTitle className="text-2xl">New Post</CardTitle>
@@ -83,24 +115,25 @@ const ContentTab = () => {
                 widget.close();
               }}
             >
-              {({ open }) => (
-                <Button
-                  onClick={() => open()}
-                  variant={"outline"}
-                  type="button"
-                >
-                  Upload Media
-                </Button>
-              )}
+              {({ open }) => {
+                return (
+                  <Button
+                    onClick={() => open()}
+                    variant={"outline"}
+                    type="button"
+                  >
+                    Upload Media
+                  </Button>
+                );
+              }}
             </CldUploadWidget>
 
-            {/* Use the static media URL here */}
             {mediaUrl && mediaType === "image" && (
               <div className="flex justify-center relative w-full h-96">
                 <Image
                   fill
                   src={mediaUrl}
-                  alt="Default Image"
+                  alt="Uploaded Image"
                   className="object-contain rounded-md"
                 />
               </div>
@@ -142,8 +175,8 @@ const ContentTab = () => {
           </CardContent>
 
           <CardFooter>
-            <Button className="w-full" type="submit">
-              Create Post
+            <Button className="w-full" type="submit" disabled={isPending}>
+              {isPending ? "Creating Post..." : "Create Post"}
             </Button>
           </CardFooter>
         </Card>
@@ -151,5 +184,4 @@ const ContentTab = () => {
     </>
   );
 };
-
 export default ContentTab;
