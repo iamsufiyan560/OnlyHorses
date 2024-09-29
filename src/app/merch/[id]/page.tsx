@@ -1,14 +1,31 @@
 import BaseLayout from "@/components/BaseLayout";
 import UnderlinedText from "@/components/decorators/UnderlinedText";
 import ProductCard from "@/components/ProductCard";
-import { products } from "@/dummy_data";
 import ProductCheckout from "./ProductCheckout";
+import prisma from "@/db/prisma";
+import { notFound } from "next/navigation";
+import NoProductsMessage from "@/components/NoProductsMessage";
 
 const Page = async ({ params }: { params: { id: string } }) => {
+  const currentProduct = await prisma.product.findUnique({
+    where: {
+      id: params.id,
+    },
+  });
+
+  const products = await prisma.product.findMany({
+    where: {
+      isArchived: false,
+      id: { not: params.id },
+    },
+  });
+
+  if (!currentProduct || currentProduct.isArchived) return notFound();
+
   return (
     <BaseLayout renderRightPanel={false}>
       <div className="px-3 md:px-7 my-20">
-        <ProductCheckout product={products[0]} />
+        <ProductCheckout product={currentProduct} />
 
         <h1 className="text-3xl text-center mt-20 mb-10 font-bold tracking-tight">
           More product from{" "}
@@ -17,9 +34,13 @@ const Page = async ({ params }: { params: { id: string } }) => {
           </UnderlinedText>
         </h1>
         <div className="grid gap-5 grid-cols-1 md:grid-cols-2">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
+          {products.length === 0 ? (
+            <NoProductsMessage />
+          ) : (
+            products.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))
+          )}
         </div>
       </div>
     </BaseLayout>

@@ -12,8 +12,9 @@ import { centsToDollars } from "@/lib/utils";
 import { Label } from "@radix-ui/react-label";
 
 import { useState } from "react";
+import { Product } from "@prisma/client";
 
-const ProductCheckout = ({ product }: { product: any }) => {
+const ProductCheckout = ({ product }: { product: Product }) => {
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   return (
     <div className="flex flex-col md:flex-row gap-5">

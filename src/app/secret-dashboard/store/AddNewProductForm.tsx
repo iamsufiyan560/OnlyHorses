@@ -15,11 +15,33 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CldUploadWidget, CloudinaryUploadWidgetInfo } from "next-cloudinary";
 import Image from "next/image";
 import { useState } from "react";
+import { addNewProductToStoreAction } from "../actions";
+import { useToast } from "@/hooks/use-toast";
 
 const AddNewProductForm = () => {
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const { mutate: createProduct, isPending } = useMutation({
+    mutationKey: ["createProduct"],
+    mutationFn: async () =>
+      await addNewProductToStoreAction({ name, image: imageUrl, price }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["getAllProducts"] });
+      toast({
+        title: "Product Added",
+        description: "The product has been added successfully",
+      });
+
+      setName("");
+      setPrice("");
+      setImageUrl("");
+    },
+  });
 
   return (
     <>
@@ -27,7 +49,12 @@ const AddNewProductForm = () => {
         Add <RotatedText>New</RotatedText> Product
       </p>
 
-      <form>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          createProduct();
+        }}
+      >
         <Card className="w-full max-w-md mx-auto">
           <CardHeader>
             <CardTitle className="text-2xl">New Merch</CardTitle>
@@ -45,6 +72,7 @@ const AddNewProductForm = () => {
                 placeholder="OnlyHorse Special"
                 required
                 value={name}
+                onChange={(e) => setName(e.target.value)}
               />
             </div>
 
@@ -56,6 +84,7 @@ const AddNewProductForm = () => {
                 required
                 value={price}
                 placeholder="14.99"
+                onChange={(e) => setPrice(e.target.value)}
               />
             </div>
 
@@ -94,8 +123,8 @@ const AddNewProductForm = () => {
             )}
           </CardContent>
           <CardFooter>
-            <Button className="w-full" type="submit">
-              Add Product
+            <Button className="w-full" type="submit" disabled={isPending}>
+              {isPending ? "Adding..." : "Add Product"}
             </Button>
           </CardFooter>
         </Card>

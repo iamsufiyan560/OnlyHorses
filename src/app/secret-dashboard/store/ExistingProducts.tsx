@@ -1,12 +1,15 @@
 "use client";
 import ProductCard from "@/components/ProductCard";
 import ProductSkeleton from "@/components/skeletons/ProductSkeleton";
-import { products } from "@/dummy_data";
 import { useQuery } from "@tanstack/react-query";
 import { X } from "lucide-react";
+import { getAllProductsAction } from "../actions";
 
 const ExistingProducts = () => {
-  const isLoading = false;
+  const { data: products, isLoading } = useQuery({
+    queryKey: ["getAllProducts"],
+    queryFn: async () => await getAllProductsAction(),
+  });
 
   return (
     <>

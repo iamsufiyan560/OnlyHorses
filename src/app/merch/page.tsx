@@ -1,9 +1,15 @@
 import BaseLayout from "@/components/BaseLayout";
-import UnderlinedText from "@/components/decorators/UnderlinedText";
 import ProductCard from "@/components/ProductCard";
-import { products } from "@/dummy_data";
+import UnderlinedText from "@/components/decorators/UnderlinedText";
+import prisma from "@/db/prisma";
 
-const Page = () => {
+const Page = async () => {
+  const products = await prisma.product.findMany({
+    where: {
+      isArchived: false,
+    },
+  });
+
   return (
     <BaseLayout renderRightPanel={false}>
       <div className="px-3 md:px-10 my-10">

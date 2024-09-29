@@ -10,6 +10,7 @@ const TodaysHighlight = () => {
         height="540"
         className="rounded-md"
         src="laiivslv3yvx6qq5xuyn"
+        autoPlay
       />
     </div>
   );
