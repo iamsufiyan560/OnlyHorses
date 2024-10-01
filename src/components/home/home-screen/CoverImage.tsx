@@ -1,10 +1,24 @@
 import { Heart, Image as ImageIcon, Video } from "lucide-react";
 import Image from "next/image";
+import prisma from "@/db/prisma";
+const CoverImage = async ({ adminName }: { adminName: string }) => {
+  const imageCount = await prisma.post.count({
+    where: {
+      mediaType: "image",
+    },
+  });
 
-const CoverImage = ({ adminName }: { adminName: string }) => {
-  const imageCount = 42;
-  const videoCount = 15;
-  const totalLikes = 12345;
+  const videoCount = await prisma.post.count({
+    where: {
+      mediaType: "video",
+    },
+  });
+
+  const totalLikes = await prisma.post.aggregate({
+    _sum: {
+      likes: true,
+    },
+  });
 
   function formatNumber(num: number) {
     if (num >= 1000000) {
@@ -50,7 +64,7 @@ const CoverImage = ({ adminName }: { adminName: string }) => {
               <div className="flex items-center gap-1">
                 <Heart className="w-4 h-4" />
                 <span className="text-sm font-bold">
-                  {formatNumber(totalLikes)}
+                  {formatNumber(totalLikes._sum.likes || 0)}
                 </span>
               </div>
             </div>

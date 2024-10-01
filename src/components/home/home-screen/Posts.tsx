@@ -1,10 +1,23 @@
+"use client";
 import React from "react";
 import Post from "./Post";
 import UnderlinedText from "@/components/decorators/UnderlinedText";
 import PostSkeleton from "@/components/skeletons/PostSkeleton";
-import { admin, posts, user } from "@/dummy_data";
-const Posts = () => {
-  const isLoading = false;
+import { User } from "@prisma/client";
+import { useQuery } from "@tanstack/react-query";
+import { getPostsAction } from "./actions";
+const Posts = ({
+  isSubscribed,
+  admin,
+}: {
+  isSubscribed: boolean;
+  admin: User;
+}) => {
+  const { data: posts, isLoading } = useQuery({
+    queryKey: ["posts"],
+    queryFn: async () => await getPostsAction(),
+  });
+
   return (
     <div>
       {!isLoading &&
@@ -13,7 +26,7 @@ const Posts = () => {
             key={post.id}
             post={post}
             admin={admin}
-            isSubscribed={user.isSubscribed}
+            isSubscribed={isSubscribed}
           />
         ))}
 

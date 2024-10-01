@@ -1,7 +1,11 @@
 "use client";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { buttonVariants } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
+import { Prisma, User } from "@prisma/client";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Heart,
   ImageIcon,
@@ -13,17 +17,54 @@ import { CldVideoPlayer } from "next-cloudinary";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { deletePostAction } from "./actions";
+
+type PostWithComments = Prisma.PostGetPayload<{
+  include: {
+    comments: {
+      include: {
+        user: true;
+      };
+    };
+    likesList: true;
+  };
+}>;
 
 const Post = ({
   post,
   isSubscribed,
   admin,
 }: {
-  post: any;
+  post: PostWithComments;
   isSubscribed: boolean;
-  admin: any;
+  admin: User;
 }) => {
-  const [isLiked, setISliked] = useState(true);
+  const [isLiked, setIsLiked] = useState(false);
+  const [comment, setComment] = useState("");
+  const { user } = useKindeBrowserClient();
+
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const { mutate: deletePost } = useMutation({
+    mutationKey: ["deletePost"],
+    mutationFn: async () => await deletePostAction(post.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      toast({
+        title: "Success",
+        description: "Post deleted successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   return (
     <div className="flex flex-col gap-3 p-3 border-t">
       <div className="flex items-center justify-between">
@@ -42,8 +83,11 @@ const Post = ({
             17.06.2024
           </p>
 
-          {admin.id && (
-            <Trash className="w-5 h-5 text-muted-foreground hover:text-red-500 cursor-pointer" />
+          {admin.id === user?.id && (
+            <Trash
+              className="w-5 h-5 text-muted-foreground hover:text-red-500 cursor-pointer"
+              onClick={() => deletePost()}
+            />
           )}
         </div>
       </div>
@@ -114,13 +158,17 @@ const Post = ({
               "text-red-500": isLiked,
               "fill-red-500": isLiked,
             })}
-            onClick={() => setISliked(!isLiked)}
+            onClick={() => setIsLiked(!isLiked)}
           />
-          <span className="text-xs text-zinc-400 tracking-tighter">55</span>
+          <span className="text-xs text-zinc-400 tracking-tighter">
+            {post.likes}
+          </span>
         </div>
         <div className="flex gap-1 items-center">
           <MessageCircle className="w-5 h-5 cursor-pointer" />
-          <span className="text-xs text-zinc-400 tracking-tighter">11</span>
+          <span className="text-xs text-zinc-400 tracking-tighter">
+            {post.comments.length > 0 ? post.comments.length : 0}
+          </span>
         </div>
       </div>
     </div>
