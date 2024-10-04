@@ -1,5 +1,6 @@
 "use server";
 import prisma from "@/db/prisma";
+import { centsToDollars } from "@/lib/utils";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 
 type PostArgs = {
@@ -113,4 +114,95 @@ export async function toggleProductArchiveAction(productId: string) {
   });
 
   return { success: true, product: updatedProduct };
+}
+
+export async function getDashboardData() {
+  const totalRevenuePromise = Promise.all([
+    prisma.order.aggregate({
+      _sum: {
+        price: true,
+      },
+      where: {
+        isPaid: true,
+      },
+    }),
+    prisma.subscription.aggregate({
+      _sum: {
+        price: true,
+      },
+    }),
+  ]);
+
+  const totalSalesPromise = prisma.order.count({
+    where: {
+      isPaid: true,
+    },
+  });
+  const totalSubscriptionsPromise = prisma.subscription.count();
+
+  const recentSalesPromise = prisma.order.findMany({
+    take: 4,
+    orderBy: {
+      orderDate: "desc",
+    },
+    select: {
+      user: {
+        select: {
+          name: true,
+          email: true,
+          image: true,
+        },
+      },
+      price: true,
+      orderDate: true,
+    },
+    where: {
+      isPaid: true,
+    },
+  });
+
+  const recentSubscriptionsPromise = prisma.subscription.findMany({
+    take: 4,
+    orderBy: {
+      startDate: "desc",
+    },
+    select: {
+      user: {
+        select: {
+          name: true,
+          email: true,
+          image: true,
+        },
+      },
+      price: true,
+      startDate: true,
+    },
+  });
+
+  // run all promises in parallel so that they don't block each other
+  const [
+    totalRevenueResult,
+    totalSales,
+    totalSubscriptions,
+    recentSales,
+    recentSubscriptions,
+  ] = await Promise.all([
+    totalRevenuePromise,
+    totalSalesPromise,
+    totalSubscriptionsPromise,
+    recentSalesPromise,
+    recentSubscriptionsPromise,
+  ]);
+
+  const totalRevenue =
+    (totalRevenueResult[0]._sum.price || 0) +
+    (totalRevenueResult[1]._sum.price || 0);
+
+  return {
+    totalRevenue: centsToDollars(totalRevenue),
+    totalSales,
+    totalSubscriptions,
+    recentSales,
+    recentSubscriptions,
+  };
 }

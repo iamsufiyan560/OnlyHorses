@@ -15,7 +15,15 @@ const Page = () => {
   });
 
   useEffect(() => {
-    if (data?.success || data?.success === false) {
+    // if (data?.success || data?.success === false) {
+    // 	router.push("/");
+    // }
+
+    const stripeUrl = localStorage.getItem("stripeRedirectUrl");
+    if (stripeUrl && user?.email && !checkingAuth) {
+      localStorage.removeItem("stripeRedirectUrl");
+      window.location.href = stripeUrl + "?prefilled_email=" + user.email;
+    } else if (!user && !checkingAuth) {
       router.push("/");
     }
   }, [router, checkingAuth, user]);

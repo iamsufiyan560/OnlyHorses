@@ -2,8 +2,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { centsToDollars } from "@/lib/utils";
 import { DollarSign } from "lucide-react";
+import { getDashboardData } from "../actions";
 
-const AnalyticsTab = () => {
+const AnalyticsTab = async () => {
+  const { totalRevenue, totalSubscriptions, totalSales } =
+    await getDashboardData();
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 my-5">
@@ -13,7 +16,7 @@ const AnalyticsTab = () => {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$24,345</div>
+            <div className="text-2xl font-bold">${totalRevenue || 0}</div>
           </CardContent>
         </Card>
 
@@ -23,7 +26,7 @@ const AnalyticsTab = () => {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+435</div>
+            <div className="text-2xl font-bold">+{totalSales}</div>
           </CardContent>
         </Card>
 
@@ -33,7 +36,7 @@ const AnalyticsTab = () => {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+212</div>
+            <div className="text-2xl font-bold">+{totalSubscriptions}</div>
           </CardContent>
         </Card>
       </div>
@@ -47,25 +50,8 @@ const AnalyticsTab = () => {
 };
 export default AnalyticsTab;
 
-const RecentSubscriptions = () => {
-  const recentSubscriptions = [
-    {
-      user: {
-        name: "John Doe",
-        email: "john@email.com",
-        image: "",
-      },
-      price: 10_00,
-    },
-    {
-      user: {
-        name: "Jane Doe",
-        email: "jane@email.com",
-      },
-      price: 20_00,
-    },
-  ];
-
+const RecentSubscriptions = async () => {
+  const { recentSubscriptions } = await getDashboardData();
   return (
     <Card className="flex-1">
       <CardHeader className="px-3">
@@ -87,8 +73,11 @@ const RecentSubscriptions = () => {
               <AvatarImage
                 src={subscription.user.image || "/user-placeholder.png"}
                 alt="Avatar"
+                className="object-cover"
               />
-              <AvatarFallback>CN</AvatarFallback>
+              <AvatarFallback>
+                {subscription?.user?.name![0] || ""}
+              </AvatarFallback>
             </Avatar>
             <div className="grid gap-1">
               <p className="text-xs font-medium leading-none">
@@ -109,25 +98,7 @@ const RecentSubscriptions = () => {
 };
 
 const RecentSales = async () => {
-  const recentSales = [
-    {
-      user: {
-        name: "John Doe",
-        email: "john@email.com",
-        image: "",
-      },
-      price: 10_00,
-    },
-    {
-      user: {
-        name: "Jane Doe",
-        email: "jane@email.com",
-        image: "",
-      },
-      price: 20_00,
-    },
-  ];
-
+  const { recentSales } = await getDashboardData();
   return (
     <Card className="flex-1">
       <CardHeader className="px-3">
@@ -143,6 +114,7 @@ const RecentSales = async () => {
               <AvatarImage
                 src={order.user.image || "/user-placeholder.png"}
                 alt="Avatar"
+                className="object-cover"
               />
               <AvatarFallback>
                 <p>{order?.user?.name![0] || ""}</p>

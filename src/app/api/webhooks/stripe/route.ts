@@ -5,6 +5,10 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
 import { Resend } from "resend";
+import WelcomeEmail from "@/email/WelcomeEmail";
+import ReceiptEmail from "@/email/ReceiptEmail";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const webhookSecret =
   process.env.NODE_ENV === "development"
@@ -75,7 +79,6 @@ export async function POST(req: Request) {
                 throw new Error("Invalid price id");
               }
 
-              // The upsert operation in Prisma is a combination of update and insert. It allows you to update an existing record if it exists or create a new one if it doesn't.
               const subscription = await prisma.subscription.upsert({
                 where: { userId: user.id },
                 update: {
@@ -97,6 +100,20 @@ export async function POST(req: Request) {
                 where: { id: user.id },
                 data: { isSubscribed: true },
               });
+
+              if (process.env.NODE_ENV !== "production") {
+                await resend.emails.send({
+                  from: "OnlyHorse <onboarding@resend.dev>",
+                  to: [customerDetails.email],
+                  subject: "Subscription Confirmation",
+                  react: WelcomeEmail({
+                    userEmail: customerDetails.email,
+                    userName: user.name,
+                    subscriptionStartDate: subscription.startDate,
+                    subscriptionEndDate: subscription.endDate,
+                  }),
+                });
+              }
             } else {
               // one time payment, for our t-shirts
               const { orderId, size } = session.metadata as {
@@ -129,6 +146,23 @@ export async function POST(req: Request) {
                 },
               });
               // send a success email to the user
+
+              if (process.env.NODE_ENV !== "production") {
+                await resend.emails.send({
+                  from: "OnlyHorse <onboarding@resend.dev>",
+                  to: [customerDetails.email],
+                  subject: "Order Confirmation",
+                  react: ReceiptEmail({
+                    orderDate: new Date(),
+                    orderNumber: updatedOrder.id,
+                    productImage: updatedOrder.product.image,
+                    productName: updatedOrder.product.name,
+                    productSize: updatedOrder.size,
+                    shippingAddress: updatedOrder.shippingAddress!,
+                    userName: user.name!,
+                  }),
+                });
+              }
             }
           }
         }
